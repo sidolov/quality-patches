@@ -129,7 +129,7 @@
     },
     "MDVA-30106": {
         "magento/magento2-base": {
-            "Fixes the issue where during checkout, payments are not loaded with “Cannot read property ‘length’ of null ” error in JS console.": {
+            "Fixes the issue where during checkout, payments are not loaded with \u201cCannot read property \u2018length\u2019 of null \u201d error in JS console.": {
                 "^2.3.0": {
                     "file": "os/MDVA-30106_2.3.4.patch"
                 }
@@ -1884,6 +1884,11 @@
                     "file": "os/MC-41359_2.4.2.patch"
                 }
             }
+        }
+    },
+    "magento/magento2-base": {
+        "Patches generator test": {
+            "2.4.1": "path/to/test/patch.patch"
         }
     }
 }
