@@ -1,0 +1,92 @@
+From 7d80db88b9998bb564d553000d7a7881e3d95727 Mon Sep 17 00:00:00 2001
+From: Maikel Koek <maikel@h-o.nl>
+Date: Fri, 9 Apr 2021 14:37:25 +0200
+Subject: [PATCH 1/2] Take required product attributes into account when
+ caching used products
+
+---
+ .../Model/Product/Type/Configurable.php        | 14 ++++++++++----
+ .../Model/Product/Type/ConfigurableTest.php    | 18 ++++++++++++++++++
+ 2 files changed, 28 insertions(+), 4 deletions(-)
+
+diff --git a/app/code/Magento/ConfigurableProduct/Model/Product/Type/Configurable.php b/app/code/Magento/ConfigurableProduct/Model/Product/Type/Configurable.php
+index 79f6d1e47f1a..ec075dbf99aa 100644
+--- a/app/code/Magento/ConfigurableProduct/Model/Product/Type/Configurable.php
++++ b/app/code/Magento/ConfigurableProduct/Model/Product/Type/Configurable.php
+@@ -1290,13 +1290,19 @@ public function isPossibleBuyFromList($product)
+      */
+     public function getUsedProducts($product, $requiredAttributeIds = null)
+     {
+-        if (!$product->hasData($this->_usedProducts)) {
+-            $collection = $this->getConfiguredUsedProductCollection($product, false, $requiredAttributeIds);
++        $requiredAttributeIds = $requiredAttributeIds ?: [];
++        array_unshift($requiredAttributeIds, $product->getId());
++
++        $cacheKey = $this->getUsedProductsCacheKey($requiredAttributeIds);
++        if (!$product->hasData($this->_usedProducts) || !isset($product->getData($this->_usedProducts)[$cacheKey])) {
++            $collection = $this->getConfiguredUsedProductCollection($product, true, $requiredAttributeIds);
+             $usedProducts = array_values($collection->getItems());
+-            $product->setData($this->_usedProducts, $usedProducts);
++            $usedProductsCache = $product->getData($this->_usedProducts);
++            $usedProductsCache[$cacheKey] = $usedProducts;
++            $product->setData($this->_usedProducts, $usedProductsCache);
+         }
+ 
+-        return $product->getData($this->_usedProducts);
++        return $product->getData($this->_usedProducts)[$cacheKey];
+     }
+ 
+     /**
+diff --git a/dev/tests/integration/testsuite/Magento/ConfigurableProduct/Model/Product/Type/ConfigurableTest.php b/dev/tests/integration/testsuite/Magento/ConfigurableProduct/Model/Product/Type/ConfigurableTest.php
+index 4b6fac496df0..fbab458cd928 100644
+--- a/dev/tests/integration/testsuite/Magento/ConfigurableProduct/Model/Product/Type/ConfigurableTest.php
++++ b/dev/tests/integration/testsuite/Magento/ConfigurableProduct/Model/Product/Type/ConfigurableTest.php
+@@ -283,6 +283,24 @@ public function testGetUsedProductsWithoutRequiredAttributes()
+         }
+     }
+ 
++    /**
++     * @magentoAppIsolation enabled
++     * @magentoDataFixture Magento/ConfigurableProduct/_files/product_configurable_with_metadescription.php
++     */
++    public function testGetUsedProductsWithoutAndWithRequiredAttributes()
++    {
++        $products = $this->model->getUsedProducts($this->product);
++        foreach ($products as $product) {
++            self::assertNull($product->getData('meta_description'));
++        }
++
++        $requiredAttributeIds = [86];
++        $products = $this->model->getUsedProducts($this->product, $requiredAttributeIds);
++        foreach ($products as $product) {
++            self::assertNotNull($product->getData('meta_description'));
++        }
++    }
++
+     /**
+      * Test getUsedProducts returns array with same indexes regardless collections was cache or not.
+      *
+
+From d86a28751d286dc42d2561093ed3841e6edff085 Mon Sep 17 00:00:00 2001
+From: Maikel Koek <maikel@h-o.nl>
+Date: Mon, 12 Apr 2021 10:39:24 +0200
+Subject: [PATCH 2/2] reverted arguments of getConfiguredUsedProductCollection
+
+$skipStockFilter was accidentally changed to true
+---
+ .../ConfigurableProduct/Model/Product/Type/Configurable.php     | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/app/code/Magento/ConfigurableProduct/Model/Product/Type/Configurable.php b/app/code/Magento/ConfigurableProduct/Model/Product/Type/Configurable.php
+index ec075dbf99aa..6a36c3652994 100644
+--- a/app/code/Magento/ConfigurableProduct/Model/Product/Type/Configurable.php
++++ b/app/code/Magento/ConfigurableProduct/Model/Product/Type/Configurable.php
+@@ -1295,7 +1295,7 @@ public function getUsedProducts($product, $requiredAttributeIds = null)
+ 
+         $cacheKey = $this->getUsedProductsCacheKey($requiredAttributeIds);
+         if (!$product->hasData($this->_usedProducts) || !isset($product->getData($this->_usedProducts)[$cacheKey])) {
+-            $collection = $this->getConfiguredUsedProductCollection($product, true, $requiredAttributeIds);
++            $collection = $this->getConfiguredUsedProductCollection($product, false, $requiredAttributeIds);
+             $usedProducts = array_values($collection->getItems());
+             $usedProductsCache = $product->getData($this->_usedProducts);
+             $usedProductsCache[$cacheKey] = $usedProducts;
