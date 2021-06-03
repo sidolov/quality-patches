@@ -1,0 +1,28 @@
+From 01d32423766d908743d5c117b4cd936127404c2d Mon Sep 17 00:00:00 2001
+From: Jakob Meissner <jakob.meissner@skyworx.io>
+Date: Thu, 3 Jun 2021 16:24:33 +0200
+Subject: [PATCH] Allow changing email template by order
+
+If we add the order as a parameter in the getTemplate() Functions, it is immediately possible, by plugging into these public functions to create functionality that changes the order template based on order attributes.
+In my use case, a custom product attribute makes it possible for the store owner to choose the order and invoice templates based on ordered products.
+---
+ vendor/magento/module-sales/Model/Order/Email/Sender.php | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/vendor/magento/module-sales/Model/Order/Email/Sender.php b/vendor/magento/module-sales/Model/Order/Email/Sender.php
+index ab1a158336d3..6cba65759f27 100644
+--- a/vendor/magento/module-sales/Model/Order/Email/Sender.php
++++ b/vendor/magento/module-sales/Model/Order/Email/Sender.php
+@@ -109,10 +109,10 @@ protected function prepareTemplate(Order $order)
+         $this->templateContainer->setTemplateOptions($this->getTemplateOptions());
+ 
+         if ($order->getCustomerIsGuest()) {
+-            $templateId = $this->identityContainer->getGuestTemplateId();
++            $templateId = $this->identityContainer->getGuestTemplateId($order);
+             $customerName = $order->getBillingAddress()->getName();
+         } else {
+-            $templateId = $this->identityContainer->getTemplateId();
++            $templateId = $this->identityContainer->getTemplateId($order);
+             $customerName = $order->getCustomerName();
+         }
+ 
