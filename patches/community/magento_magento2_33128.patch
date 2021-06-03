@@ -1,0 +1,22 @@
+From 4265688f1fa0daa0f2340ac05ce808c249629ca0 Mon Sep 17 00:00:00 2001
+From: DrJohnM <85246413+DrJohnM@users.noreply.github.com>
+Date: Wed, 2 Jun 2021 17:31:10 +0100
+Subject: [PATCH] Update zip_codes.xml patterns for Guernsey
+
+Update zip_codes.xml patterns for Guernsey to support GY10 postcodes for the Island of Sark e.g. https://en.wikipedia.org/wiki/GY_postcode_area
+---
+ vendor/magento/module-directory/etc/zip_codes.xml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/vendor/magento/module-directory/etc/zip_codes.xml b/vendor/magento/module-directory/etc/zip_codes.xml
+index f186102911a6..cfa8a349d193 100644
+--- a/vendor/magento/module-directory/etc/zip_codes.xml
++++ b/vendor/magento/module-directory/etc/zip_codes.xml
+@@ -259,6 +259,7 @@
+     <zip countryCode="GG">
+         <codes>
+             <code id="pattern_1" active="true" example="AB1 2CD">^[a-zA-Z]{2}[0-9]{1}\s[0-9]{1}[a-zA-Z]{2}$</code>
++            <code id="pattern_2" active="true" example="AB12 3CD">^[a-zA-Z]{2}[0-9]{2}\s?[0-9]{1}[a-zA-Z]{2}$</code>
+         </codes>
+     </zip>
+     <zip countryCode="GH">
