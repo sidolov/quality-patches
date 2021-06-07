@@ -1894,5 +1894,14 @@
                 }
             }
         }
+    },
+    "magento/magento2/33128": {
+        "magento2-base": {
+            "Update zip_codes.xml patterns for Guernsey": {
+                "2.4": {
+                    "file": "community/magento_magento2_33128.patch"
+                }
+            }
+        }
     }
 }
